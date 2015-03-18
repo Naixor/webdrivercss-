@@ -700,4 +700,4 @@ public class RobotRetriever
 }
 ```
 
-到此为止我们已经了解到Webdrivercss/Webdriverio的截图原理，最底层是使用***java.awt.Robot.createScreenCapture***截图，根本原理还是对桌面截图！解密完毕，其他待续~
+到此为止我们已经了解到Webdrivercss/Webdriverio的截图原理，最底层是使用[java.awt.Robot.createScreenCapture](http://docs.oracle.com/javase/7/docs/api/java/awt/Robot.html#createScreenCapture(java.awt.Rectangle))截图，根本原理还是对桌面截图！解密完毕，其他待续~
