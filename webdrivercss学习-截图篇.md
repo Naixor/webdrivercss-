@@ -3,13 +3,17 @@
 ## webdrivercss.js
 
 ### 返回一个WebdriverCSS实例，这个实例接受一个Webdriverio的实例和一个配置相关的Object
+
 > [webdrivercss.js:213](https://github.com/webdriverio/webdrivercss/blob/master/lib/webdrivercss.js#L213)
+
 ```JavaScript
 module.exports.init = function(webdriverInstance, options) {
     return new WebdriverCSS(webdriverInstance, options);
 };
 ```
+
 > [webdrivercss.js:21](https://github.com/webdriverio/webdrivercss/blob/master/lib/webdrivercss.js#L21)
+
 ```JavaScript
 var WebdriverCSS = function(webdriverInstance, options) {
     options = options || {};
@@ -21,8 +25,11 @@ var WebdriverCSS = function(webdriverInstance, options) {
 }
 ```
 ### 配置初始化完成，工作流程开始，并添加截图相关Command
+
 注意下面代码中的`this.instance`实际为***Webdriverio***的实例。因此下面代码通过[WebdriverIO中的addCommand方法](https://github.com/webdriverio/webdriverio/blob/master/lib/webdriverio.js#L80)向WebdriverIO的指令集中添加了四条指令：\[***saveViewportScreenshot***, ***saveDocumentScreenshot***, ***webdrivercss***, ***sync***\]和其对应的操作。下面我们先看webdrivercss的工作流程里面都做了什么。
+
 > [webdrivercss.js:79](https://github.com/webdriverio/webdrivercss/blob/master/lib/webdrivercss.js#L79)
+
 ```JavaScript
 var WebdriverCSS = function(webdriverInstance, options) {
     ...
@@ -40,7 +47,9 @@ var WebdriverCSS = function(webdriverInstance, options) {
 ## workflow.js
 
 ### 接受一个`pageName`，配置Object，一个callback。`pageName`用来对对比的page进行命名，配置必须为含有name属性的对象，callback会被送到后续的每一步流程中，后续讲解
+
 > [workflow.js:7 ~ workflow.js:38](https://github.com/webdriverio/webdrivercss/blob/master/lib/workflow.js#L7)
+
 ```JavaScript
 module.exports = function(pagename, args) {
     /*!
@@ -76,8 +85,11 @@ module.exports = function(pagename, args) {
     ...
 }
 ```
+
 这里要着重讲解一下workflow.js的当前上下文以及他封装的`context`。由于上面贴出过的代码段中有这种写法[`this.instance.addCommand('webdrivercss', workflow.bind(this));`](https://github.com/webdriverio/webdrivercss/blob/master/lib/webdrivercss.js#L81)，因此此时workflow.js的上下文为Webddrivercss的实例对象，包含以下配置的属性及其原型链
+
 > [webdrivercss.js:43 ~ webdrivercss.js:71](https://github.com/webdriverio/webdrivercss/blob/master/lib/webdrivercss.js#L43)
+
 ```Javascript
 var WebdriverCSS = function(webdriverInstance, options) {
     ...
@@ -113,7 +125,9 @@ var WebdriverCSS = function(webdriverInstance, options) {
     ...
 }
 ```
+
 workflow.js中的context设置如下(注意this指的是上面说的Webddrivercss的实例对象)：
+
 > [workflow.js:40 ~ workflow.js:72](https://github.com/webdriverio/webdrivercss/blob/master/lib/workflow.js#L40)
 ```JavaScript
 module.exports = function(pagename, args) {
@@ -154,6 +168,7 @@ module.exports = function(pagename, args) {
     ...
 }
 ```
+
 继续读会发现workflow的工作流程：
 - startSession.js
 - setScreenWidth.js
@@ -164,8 +179,11 @@ module.exports = function(pagename, args) {
 - compareImages.js
 - saveImageDiff.js
 - asyncCallback.js
+
 注意：源码中将每个过程的工作全部绑定`context`为上下文；由于使用了`async.waterfall()`，因此每一个模块都会接受一个callback参数，在源码中被命名成了`done`(有关这个回调函数具体的使用细则请参考[async.waterfall](https://www.npmjs.com/package/async#waterfall))
-[workflow.js:81 ~ workflow.js:128](https://github.com/webdriverio/webdrivercss/blob/master/lib/workflow.js#L81)
+ 
+> [workflow.js:81 ~ workflow.js:128](https://github.com/webdriverio/webdrivercss/blob/master/lib/workflow.js#L81)
+
 ```JavaScript
 module.exports = function(pagename, args) {
     ...
@@ -218,12 +236,15 @@ module.exports = function(pagename, args) {
     );
 }
 ```
+
 由于这部分是截图功能的解读，因此我们直接跳过其他去查看`makeScreenshot.js`做了什么
 
 ## makeScreenshot.js
 
 makeScreenshot模块首先会接收Webdrivercss的第二个参数中的元素信息，并不会在截图时考虑这些元素(屏蔽这些元素的比较)
+
 > [makeScreenshot.js:7 ~ makeScreenshot.js:44](https://github.com/webdriverio/webdrivercss/blob/master/lib/makeScreenshot.js#L7)
+
 ```JavaScript
 module.exports = function(done) { // async.waterfall中每一层级传递的回调函数
     /**
@@ -266,7 +287,9 @@ module.exports = function(done) { // async.waterfall中每一层级传递的回�
 }
 ```
 继续刚才的代码，下面部分的代码首先会调用[Webdriverio.pause()](http://webdriver.io/api/utility/pause.html)方法让浏览器等待100ms，然后在调用由Webdrivercss初始化进去的`saveDocumentScreenshot`指令，随后会将刚才不可见(忽略)的元素重新变的可见
+
 > [makeScreenshot.js:49 ~ makeScreenshot.js:64](https://github.com/webdriverio/webdrivercss/blob/master/lib/makeScreenshot.js#L49)
+
 ```JavaScript
 module.exports = function(done) {
     ...
@@ -290,8 +313,11 @@ module.exports = function(done) {
     }
 }
 ```
+
 下面我们需要了解`saveDocumentScreenshot()`方法到底做了什么
+
 > [documentScreenshot.js:30 ~ documentScreenshot.js:75](https://github.com/webdriverio/webdrivercss/blob/master/lib/documentScreenshot.js#L30)
+
 ```JavaScript
 module.exports = function documentScreenshot(fileName) { // 接受一个文件名作为参数
 
@@ -342,7 +368,9 @@ module.exports = function documentScreenshot(fileName) { // 接受一个文件�
     ...
 }
 ```
+
 下面部分的代码基本看注释也能理解什么意思，需要注意的是下面代码调用了[Webdriverio.execute](http://webdriver.io/api/protocol/execute.html)，这个函数会在当前浏览器中运行javascript代码并在完成时触发回调函数。此外[async.whilst](https://www.npmjs.com/package/async#whilst)得到功能类似于while循环，直到第一个参数返回false才停止执行第二个参数函数
+
 ```JavaScript
 module.exports = function documentScreenshot(fileName) {
     ...
@@ -536,11 +564,15 @@ module.exports = function documentScreenshot(fileName) {
     });
 }
 ```
+
 至此，关于截图部分的源头已经找到，使用了[Webdriverio.screenshot()](http://webdriver.io/api/protocol/screenshot.html)来截图，那么这个截图函数到底是基于什么原理做的呢？
 
 ## Webdriverio.screenshot()
+
 Webdriverio.screenshot()是基于JsonWireProtocol协议(WebDriver Wire Protocol)实现的一个功能
+
 > [webdriverio/lib/protocol/screenshot.js](https://github.com/webdriverio/webdriverio/blob/master/lib/protocol/screenshot.js)
+
 ```JavaScript
 /**
  *
@@ -563,7 +595,9 @@ module.exports = function screenshot () {
     );
 };
 ```
+
 因此我们需要去了解JsonWireProtocol协议对于screenshot的定义和实现
+
 > 我们都知道这个`/session/:sessionId/screenshot`这个GET请求是发给selenium服务器的，因此通过反编译***selenium-server-standalone-2.37.0.jar***得到其JAVA源码
 
 > org.openqa.selenium.server.SeleniumServer，处理了有关GET/POST请求部分
@@ -571,6 +605,7 @@ module.exports = function screenshot () {
 > org.openqa.selenium.server.SeleniumDriverResourceHandler，中有关于不同的command获取的处理(/session/:sessionId/command)，其中包含了对screenshot命令的处理
 
 > org.openqa.selenium.server.commands.CaptureScreenshotToStringCommand
+
 ```Java
 package org.openqa.selenium.server.commands;
 
@@ -620,6 +655,7 @@ public class CaptureScreenshotToStringCommand
 ```
 
 > org.openqa.selenium.server.RobotRetriever
+
 ```Java
 package org.openqa.selenium.server;
 
@@ -662,4 +698,5 @@ public class RobotRetriever
   }
 }
 ```
+
 到此为止我们已经了解到Webdrivercss/Webdriverio的截图原理，最底层是使用***java.awt.Robot.createScreenCapture***截图，根本原理还是对桌面截图！解密完毕，其他待续~
