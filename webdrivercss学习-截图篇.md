@@ -129,6 +129,7 @@ var WebdriverCSS = function(webdriverInstance, options) {
 workflow.js中的context设置如下(注意this指的是上面说的Webddrivercss的实例对象)：
 
 > [workflow.js:40 ~ workflow.js:72](https://github.com/webdriverio/webdrivercss/blob/master/lib/workflow.js#L40)
+
 ```JavaScript
 module.exports = function(pagename, args) {
     ...
